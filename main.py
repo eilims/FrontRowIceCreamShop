@@ -10,9 +10,9 @@ obstacles = [(1,1), (1,3),(2,1),(2, 3)]
 
 def genNewState(action, state, p_e):
   allActions = [action]
-  allActions.extend([act for act in actions if act is not action])
+  allActions.extend([act for act in actions if (act[0] != action[0] or act[1] != action[1])])
   allWeights = [1-p_e]
-  allWeights.extend([p_e for i in range(4)])
+  allWeights.extend([p_e/4.0 for i in range(4)])
   realAction = random.choices(allActions, weights = allWeights, k = 1)[0]
   
   reached = 0
