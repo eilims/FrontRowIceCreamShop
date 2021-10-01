@@ -2,20 +2,35 @@
 # By: Vishnu Devarakonda
 
 class Environment:
+    """
+    Define an environment by subclassing. Implement this following.
+
+    ex: class Gridworld(Environment) ....
+    """
     def __init__(self) -> None:
         pass
 
-    def draw(self) -> None:
+    def draw(self, state) -> None:
+        """
+        Implement this function to draws the environment with the current state.
+        """
         raise NotImplementedError
 
     def get_next_state(self, action):
+        """
+        Implement this function to get the next state after applying action.
+        """
         raise NotImplementedError
 
-    def set_state(self, state):
+    def get_observation(self, state):
+        """
+        Implement this function to get the observation given the state.
+        """
         raise NotImplementedError
 
-    def get_observation(self):
-        raise NotImplementedError
-
-    def get_best_action(self):
+    def get_best_action(self, state, observation):
+        """
+        Implement this function to get the best action given the state and
+        observation.
+        """
         raise NotImplementedError

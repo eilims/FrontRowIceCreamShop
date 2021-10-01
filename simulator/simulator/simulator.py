@@ -8,7 +8,8 @@ class Simulator:
         """
         Initialize a simulator
         args:
-            env: Object. The simulator environment.
+            env: Environment. The simulator environment.
+            initial_state: numpy array.
         """
         self._env = env
         self._initial_state = initial_state
@@ -21,15 +22,14 @@ class Simulator:
         """
         Function renders
         """
-        self._env.draw()
+        self._env.draw(self._current_state)
 
     def reset(self):
         """
         Function resets the environment to the initial state
         """
-        self._env.set_state(self._initial_state)
+        self._current_state = self._initial_state.copy()
         self._t_step = 0
-        return self._initial_state
 
     def step(self, action):
         """
@@ -40,7 +40,7 @@ class Simulator:
                 action.
 
         """
-        next_state = self._env.get_next(action)
+        next_state = self._env.get_next_state(action)
         return next_state
 
     def observe(self):
@@ -50,15 +50,16 @@ class Simulator:
         return self._env.get_observation(self._current_state)
 
 
-    def run(self, steps: int, print : bool = False):
+    def run(self, steps: int, render : bool = False):
         """
         This function will run the simulator.
         args:
             steps: int. The number of steps to run the simulator for.
-            print: Bool. If true, the function will render the environmnet
+            render: Bool. If true, the function will render the environment
                 after every step.
         """
-        self.render()
+        if render:
+            self.render()
         while self._t_step < steps:
             self._current_action = self._env.get_best_action(
                 self._current_state,
@@ -71,4 +72,6 @@ class Simulator:
                 t_step)"""
             self._current_state = self.step(self._current_action)
             self._current_observation = self.observe(self._current_state)
+            if render:
+                self.render()
             self._t_step +=1
