@@ -16,13 +16,5 @@ def stateChange(action, state, matMap, p_e):
   
   return newState
 
-def genMap(size = (5,5), shops = [], obstacles = [], negRewPos = [], negRewVal = []):
-  matMap = [[0 for i in range(size[1])] for j in range(size[0])]
-  for shop in shops:
-    matMap[shop[0]][shop[1]] = float('inf')
-  for obstacle in obstacles:
-    matMap[shop[0]][shop[1]] = float('inf')
-    
-
 if __name__ == "__main__":
   
