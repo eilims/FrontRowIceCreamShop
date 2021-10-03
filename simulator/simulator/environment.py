@@ -16,7 +16,7 @@ class Environment:
         """
         raise NotImplementedError
 
-    def get_next_state(self, action):
+    def get_next_state(self, state, action):
         """
         Implement this function to get the next state after applying action.
         """
