@@ -40,7 +40,7 @@ class Simulator:
                 action.
 
         """
-        next_state = self._env.get_next_state(action)
+        next_state = self._env.get_next_state(self._current_state, action)
         return next_state
 
     def observe(self):
@@ -71,7 +71,7 @@ class Simulator:
                 next_state,
                 t_step)"""
             self._current_state = self.step(self._current_action)
-            self._current_observation = self.observe(self._current_state)
+            self._current_observation = self.observe()
             if render:
                 self.render()
             self._t_step +=1

@@ -1,3 +1,27 @@
+import sys
+import os
+path = "{}/simulator".format(os.getcwd())
+sys.path.append(path)
+
+from simulator import simulator
+from gridworld import GridWorld
+import numpy as np
+
+initial_state = np.array([0,0])
+gw = GridWorld()
+
+# print(gw.get_observation(initial_state))
+# print(gw.get_harmonic_mean(initial_state))
+# print(gw.get_next_state(initial_state, act1))
+# print(gw.get_next_state(initial_state, act2))
+observation = gw.get_observation(initial_state)
+sim = simulator.Simulator(gw, initial_state)
+sim.run(steps=100, render=True)
+exit()
+
+
+
+"""
 import numpy as np
 import random
 import copy
@@ -26,3 +50,4 @@ def genMap(size = (5,5), shops = [], obstacles = [], negRewPos = [], negRewVal =
 
 if __name__ == "__main__":
   
+"""
