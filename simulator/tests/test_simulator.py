@@ -30,7 +30,9 @@ class simulator(unittest.TestCase):
         sim = Simulator(env, np.array([1]))
         action = np.array([2])
         next_state = sim.step(action)
-        env.get_next_state.assert_called_with([action])
+        # env.get_next_state.assert_called_with([(np.array([1]),
+        #  action)])
+        env.get_next_state.assert_called_with(np.array([1]), action)
         self.assertEqual(next_state, action)
 
     @patch('simulator.simulator.Environment')
