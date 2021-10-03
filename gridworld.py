@@ -55,6 +55,7 @@ class GridWorld(env.Environment):
     if not (0 <= y < self._y_max):
       return False
     return True
+
   def get_harmonic_mean(self, state):
     den = []
     for goal in self._goals:
