@@ -2,11 +2,22 @@ import numpy as np
 import random
 import copy
 from matplotlib import pyplot as plt
+import sys
+import os
+path = "{}/simulator".format(os.getcwd())
+sys.path.append(path)
+
+from simulator import simulator
+from gridworld import GridWorld
+import numpy as np
 
 size      = (5,5)
 actions   = [(1,0),(-1,0),(0,1),(0,-1),(0,0)]
 shops     = [(2,0), (2,2)]
 obstacles = [(1,1), (1,3),(2,1),(2, 3)]
+
+initial_state = np.array([0,0])
+gw = GridWorld()
 
 def genNewState(action, state, p_e):
   allActions = [action]
@@ -24,7 +35,7 @@ def genNewState(action, state, p_e):
   
   return newState, reached
 
-if __name__ == "__main__":
-  action = actions[0]
-  state  = (1,0)
-  print(genNewState(action, state, 0.1))
+observation = gw.get_observation(initial_state)
+sim = simulator.Simulator(gw, initial_state)
+sim.run(steps=100, render=True)
+exit()
