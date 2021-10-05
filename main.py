@@ -10,10 +10,6 @@ import numpy as np
 initial_state = np.array([0,0])
 gw = GridWorld()
 
-# print(gw.get_observation(initial_state))
-# print(gw.get_harmonic_mean(initial_state))
-# print(gw.get_next_state(initial_state, act1))
-# print(gw.get_next_state(initial_state, act2))
 observation = gw.get_observation(initial_state)
 sim = simulator.Simulator(gw, initial_state)
 sim.run(steps=100, render=True)

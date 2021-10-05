@@ -12,7 +12,7 @@ import random
 class GridWorld(env.Environment):
   def __init__(self):
     self._goals = [
-      np.array([4, 4])
+      np.array([4, 4]),
     ]
     self._actions = [
       np.array([-1, 0]),
@@ -27,7 +27,7 @@ class GridWorld(env.Environment):
       np.array([2, 1]),
       np.array([2, 3])
     ]
-    self._pe = .05
+    self._pe = .3
     self._x_max = 5
     self._y_max = 5
     return
@@ -66,12 +66,16 @@ class GridWorld(env.Environment):
     return ceil(h) if random.random() > (1-prob) else floor(h)
 
   def get_observation(self, state):
-    new_state = [self.get_next_state(state, act) for act in self._actions]
-    obs = [self.get_harmonic_mean(ns) for ns in new_state]
+    # new_state = [self.get_next_state(state, act) for act in self._actions]
+    new_states = [
+        (i, state + self._actions[i]) for i in range(len(self._actions)) if self.in_grid(state + self._actions[i])
+    ]
+    obs = [(ns[0], self.get_harmonic_mean(ns[1])) for ns in new_states]
     return obs
 
   def get_best_action(self, state, observation):
-    return self._actions[np.argmin(observation)]
+    minObs = min(observation, key = lambda x : x[1])
+    return self._actions[minObs[0]]
 
   def get_next_state(self, state, action):
     # action is do nothing
@@ -94,14 +98,14 @@ class GridWorld(env.Environment):
       pos_new_states = [state + act for act in actions]
       pos_new_states = [state for state in pos_new_states if self.in_grid(state)]
       new_states = []
-      for state in new_states:
+      for state in pos_new_states:
         add_state = True
         for obs in self._obstacles:
           if np.array_equal(obs, state):
             add_state = False
             break
         if add_state:
-          new_states.append(add_state)
-      return new_state[random.randint(0, len(new_states))]
+          new_states.append(state)
+      return new_states[random.randint(0, len(new_states)-1)]
     else:
       return state + action
