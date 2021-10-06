@@ -1,0 +1,27 @@
+Informative text detailing specific pythonic representations used for important components of the simulator + MDP problem solver
+
+[SUBJECT TO CHANGE], current MDP solver is written with the assumption of these data structures
+
+States "S"
+===========================
+    A list of states of size |S|
+
+Actions "A"
+===========================
+    A list of actions of size |A|
+
+Transition Probabilities "P"
+===========================
+    Dictionary with an action from A as keys and transition matrices of |S|*|S| size for values
+    - For a given action key, the appropriate transition matrices' entries (indexed i,j for row, col) each denote the probability
+      of transitioning from state i to state j under that action.
+    - |A| entries/keys in total
+
+Rewards "R"
+===========================
+    Similar to "P":
+
+    Dictionary with an action from A as keys and reward matrices of |S|*|S| size for values
+    - For a given action key, the appropriate reward matrices' entries (indexed i,j for row, col) each denote the immediate or expected reward
+      of transitioning from state i to state j under that action.
+    - |A| entries/keys in total
