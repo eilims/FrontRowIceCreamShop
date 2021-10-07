@@ -10,6 +10,14 @@ class Environment:
     def __init__(self) -> None:
         pass
 
+    def init_transition_probabilites(self):
+        """
+        Implement this function to create the transition probability table
+        Should be in the following format:
+        Dictionary {A: transition_probability_for_action[current_state][next_state]}
+        """
+        raise NotImplementedError
+
     def draw(self, state) -> None:
         """
         Implement this function to draws the environment with the current state.
