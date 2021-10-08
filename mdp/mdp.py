@@ -151,6 +151,8 @@ class PolicyIteration(MDP):
             D_bar = np.diag(np.matmul(P_bar, R_bar.T))
             V_bar = np.matmul(np.linalg.inv(np.eye(num_states) - self._gamma * P_bar), D_bar)
 
+            # Update Value for Policy Refinement
+            self.V = V_bar
 
             # 2. Policy Refinement: Compute policy_(i+1) from V^(pi_i)
             self.bellmanBackup(update_value = False) # Only update self.policy
