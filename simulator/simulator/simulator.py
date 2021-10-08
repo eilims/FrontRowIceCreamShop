@@ -13,6 +13,7 @@ class Simulator:
         """
         self._env = env
         self._env.init_transition_probabilites()
+        self._env.init_reward()
         self._initial_state = initial_state
         self._current_state = self._initial_state.copy()
         self._current_observation = self.observe()

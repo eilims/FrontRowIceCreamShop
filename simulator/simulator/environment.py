@@ -10,6 +10,12 @@ class Environment:
     def __init__(self) -> None:
         pass
 
+    def init_reward(self):
+        """
+        Implement this function to generate the reward matrix with dictionary structure.
+        """
+        raise NotImplementedError
+
     def init_transition_probabilites(self):
         """
         Implement this function to create the transition probability table
