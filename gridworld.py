@@ -120,9 +120,18 @@ class GridWorld(env.Environment):
           #next state in set of states
           nextState = self._states[nextStateIndex]
           # generated reward depends on next state
-          if( self.is_state_in_list(nextState, self._obstacles)):
+          nextStateIsObstacle = self.is_state_in_list(nextState, self._obstacles)
+          nextStateIsGoal = self.is_state_in_list(nextState, self._goals)
+          # current probability distribution for state-action pair
+          probabilityDistribution = self._transition_probabilities[actionIndex][currentStateIndex]
+          # probability of transitioning to next state based on distribution
+          transitionProbability = probabilityDistribution[nextStateIndex]
+          # testing for correct state-action-nextstate probability 
+          #print(currentAction, currentState, nextState)
+          #print(transitionProbability)  
+          if( nextStateIsObstacle ): 
             currentRewardMatrix[currentState, nextState] = 0
-          elif ( self.is_state_in_list(nextState, self._goals)):
+          elif ( transitionProbability > 0 and nextStateIsGoal ):
             currentRewardMatrix[currentState, nextState] = self._goal_reward
           else:
             currentRewardMatrix[currentState, nextState] = 0
