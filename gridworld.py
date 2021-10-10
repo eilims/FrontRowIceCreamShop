@@ -158,11 +158,14 @@ class GridWorld(env.Environment):
             print("    " + str(stateMatrix[currentStateIndex]))
 
   def get_harmonic_mean(self, state):
-    den = []
+    denInv = []
     for goal in self._goals:
       dG = np.sqrt(np.sum(np.power(state - goal, 2)))
-      den.append(1/dG)
-    h = 2. / sum(den)
+      denInv.append(dG)
+    if 0. in denInv:
+      h = 0.
+    else:
+      h = 2. / sum([1./d for d in denInv])
     prob = ceil(h) - h
     return ceil(h) if random.random() > (1-prob) else floor(h)
 
