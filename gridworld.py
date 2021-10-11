@@ -137,7 +137,13 @@ class GridWorld(env.Environment):
                             obstacleCount = self.get_number_of_obstacles(currentState)
                             # Is the next state the same as the current state
                             if(all(nextState == currentState)):
-                                probability = 1 - ((4 - obstacleCount)*(self._pe/4))
+                                desiredNextState = currentState + currentAction
+                                # If the current state and action take us into a invalid state
+                                if(self.is_state_in_list(desiredNextState, self._obstacles) or not self.in_grid(desiredNextState)):
+                                    probability = 1 - (4 - obstacleCount)*(self._pe/4)
+                                # If the current state and action take us into a valid state
+                                else:
+                                    probability = (1 + obstacleCount)*(self._pe/4)
                             else:
                                 # Is the next state somewhere the actions allow us to move
                                 if(self.is_state_in_list(nextState, self.get_actionable_states(currentState))):
