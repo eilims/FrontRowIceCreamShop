@@ -38,6 +38,9 @@ class GridWorld(env.Environment):
     ]
 
     self._transition_probabilities = {}
+    self._rewards = {}
+    self._penalty = -10
+    self._goal_reward = 20
 
     self._pe = .3
     self._x_max = 5
@@ -89,6 +92,54 @@ class GridWorld(env.Environment):
     if not (0 <= y < self._y_max):
       return False
     return True
+
+  def init_reward(self):
+    """
+    Takes obstacles, states, actions and goals 
+    and returns dictionary with the following format:
+    R = {A : matrix of rewards for states i and j for action A}
+    OR
+    R = {a1: [r(s1,s1), r(s1,s2) ... r(s1,sn),
+              ...                            ,
+              ...                            , 
+              ...                            , 
+              r(sn,s1), r(sn,s2) ... r(sn,sn)],
+         a2: [           ... ...             ],
+         ... 
+         ...
+         an: [           ... ...             ]}
+    """
+    for actionIndex in range(len(self._actions)):
+      currentAction = self._actions[actionIndex]
+      states_size = len(self._states)
+      currentRewardMatrix = np.zeros([states_size, states_size])
+      for currentStateIndex in range(states_size):
+        #current state in set of states
+        currentState = self._states[currentStateIndex]
+        for nextStateIndex in range(states_size):
+          #next state in set of states
+          nextState = self._states[nextStateIndex]
+          # generated reward depends on next state
+          nextStateIsObstacle = self.is_state_in_list(nextState, self._obstacles)
+          nextStateIsGoal = self.is_state_in_list(nextState, self._goals)
+          # current probability distribution for state-action pair
+          probabilityDistribution = self._transition_probabilities[actionIndex][currentStateIndex]
+          # probability of transitioning to next state based on distribution
+          transitionProbability = probabilityDistribution[nextStateIndex]
+          # testing for correct state-action-nextstate probability 
+          #print(currentAction, currentState, nextState)
+          #print(transitionProbability)  
+          if( nextStateIsObstacle ): 
+            currentRewardMatrix[currentState, nextState] = 0
+          elif ( transitionProbability > 0 and nextStateIsGoal ):
+            currentRewardMatrix[currentState, nextState] = self._goal_reward
+          else:
+            currentRewardMatrix[currentState, nextState] = 0
+      #set currentReward matrix as the value: (currentAction: currentRewardMatrix)
+      self._rewards[actionIndex] = currentRewardMatrix
+    
+    #for testing 
+    print (self._rewards)
 
   def init_transition_probabilites(self):
     print(len(self._states))
