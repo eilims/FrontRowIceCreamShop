@@ -36,7 +36,6 @@ class MDP:
         """
         Applies the bellman operator T on the current value V and updates self.V and self.policy
         """
-        # TODO: Highly dependent on the representations of P and R!!
 
         P = self._probabilities
         R = self._rewards
@@ -87,6 +86,8 @@ class ValueIteration(MDP):
         """
         Runs the Value Iteration algorithm
         """
+        if self._horizon == 0:
+            return
 
         while(True):
             self.iteration += 1
@@ -120,8 +121,12 @@ class PolicyIteration(MDP):
         """
         MDP.__init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon)
 
-        # TODO: Put a cap on Policy iteration if want finite iterations (Not the same thing as Horizon, technically, I think)
-        self.iteration = 0 # If horizon if finite, we need to check 
+
+        # Decide if we need to solve on an infinite or finite horizon
+        self.use_infinite_horizon = False
+        if self._horizon == -1:
+            self.use_infinite_horizon = True
+        self.iteration = 0 # If horizon is finite, we need to check 
 
         # Initialize a randomized deterministic policy which is a mapping between states and actions
         for state in self._states:
@@ -132,6 +137,8 @@ class PolicyIteration(MDP):
         """
         Runs the Policy Iteration algorithm
         """
+        if self._horizon == 0:
+            return
 
         while(True):
             self.iteration += 1
@@ -162,8 +169,11 @@ class PolicyIteration(MDP):
             self.bellmanBackup(update_value = False) # Only update self.policy
 
 
-            # Stopping criteria - Either the value doesn't change between steps or policy doesn't change
-            if np.max(np.abs(Vprevious - self.V)) <= self._epsilon: # If the value is unchanging
-                break
-            elif self.policy == policyPrevious: # Dunno if this is a good idea
+            if self.use_infinite_horizon:
+                # Stopping criteria - Either the value doesn't change between steps or policy doesn't change
+                if np.max(np.abs(Vprevious - self.V)) <= self._epsilon: # If the value is unchanging
+                    break
+                elif self.policy == policyPrevious: # Dunno if this is a good idea
+                    break
+            if self.iteration == self._horizon:
                 break

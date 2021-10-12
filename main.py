@@ -17,7 +17,7 @@ gw.init_reward()
 
 test_states = list(range(len(gw._states)))
 test_actions = list(range(len(gw._actions)))
-solver = ValueIteration(test_states, test_actions, gw._transition_probabilities, gw._rewards, 20, 0.5, 1)
+solver = ValueIteration(test_states, test_actions, gw._transition_probabilities, gw._rewards, -1, 0.5, 0.000001)
 solver.run()
 print(solver.policy)
 
