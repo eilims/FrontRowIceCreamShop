@@ -1,6 +1,7 @@
 # Defines classes for a general MDP problem and associated problem solvers.
 # By: Patrick Han
 import random
+import numpy as np
 
 class MDP:
     def __init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon):
@@ -41,17 +42,17 @@ class MDP:
         R = self._rewards
 
         # Very slow way of doing things, should be able to be vectorized but right now my brain hurts after writing this class all morning
-        for i, s in enumerate(self.V):
+        for i, sv in enumerate(self.V):
             Q = np.zeros(len(self._actions))
             for k, a in enumerate(self._actions):
                 running_sum = 0 # Sum over all s_primes (future state)
                 for j, s_prime in enumerate(self._states):
-                    running_sum += P[a][i][j] * (R[a][i][j] + self._gamma * self.V[i])
+                    running_sum += P[a][i][j] * (R[a][i][j] + self._gamma * self.V[j])
                 Q[k] = running_sum
             
             if update_value: # Value should only be updated during Value Iteration
                 self.V[i] = np.max(Q) # Maximize over all actions to get new V
-            self.policy[s] = self._actions(np.argmax(Q)) # Argmax over all actions to update the policy
+            self.policy[i] = self._actions[np.argmax(Q)] # Argmax over all actions to update the policy
             
 
 
@@ -74,8 +75,8 @@ class ValueIteration(MDP):
         # Decide if we need to solve on an infinite or finite horizon
         self.use_infinite_horizon = False
         if self._horizon == -1:
-            self.infinite_horizon = True
-        self.iteration = 0 # If horizon if finite, we need to check 
+            self.use_infinite_horizon = True
+        self.iteration = 0 # If horizon is finite, we need to check 
 
         # Initialize a deterministic policy which is a mapping between states and actions
         for state in self._states:
@@ -99,7 +100,7 @@ class ValueIteration(MDP):
             if self.use_infinite_horizon:
                 if np.max(np.abs(Vprevious - self.V)) <= self._epsilon: # If the max absolute difference is less than epsilon
                     break
-            else if self.iteration == self._horizon:
+            elif self.iteration == self._horizon:
                 break
 
 
@@ -118,6 +119,9 @@ class PolicyIteration(MDP):
             epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
         """
         MDP.__init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon)
+
+        # TODO: Put a cap on Policy iteration if want finite iterations (Not the same thing as Horizon, technically, I think)
+        self.iteration = 0 # If horizon if finite, we need to check 
 
         # Initialize a randomized deterministic policy which is a mapping between states and actions
         for state in self._states:
@@ -138,12 +142,12 @@ class PolicyIteration(MDP):
 
             # 1. Policy Evaluation: Compute V^(pi_i) from policy_i
             num_states = len(self._states)
-            P_bar = np.array((num_states, num_states))
+            P_bar = np.zeros((num_states, num_states))
             for m, s in enumerate(self._states): # Build P_bar, i.e. transition probabilities under the current policy
                 for n, s_prime in enumerate(self._states):
                     P_bar[m][n] = self._probabilities[self.policy[s]][m][n] # The probability of going from s to s_prime under the current policy
             
-            R_bar = np.array((num_states, num_states))
+            R_bar = np.zeros((num_states, num_states))
             for m, s in enumerate(self._states): # Build R_bar, i.e. rewards under the current policy
                 for n, s_prime in enumerate(self._states):
                     R_bar[m][n] = self._rewards[self.policy[s]][m][n] # The probability of going from s to s_prime under the current policy
@@ -161,5 +165,5 @@ class PolicyIteration(MDP):
             # Stopping criteria - Either the value doesn't change between steps or policy doesn't change
             if np.max(np.abs(Vprevious - self.V)) <= self._epsilon: # If the value is unchanging
                 break
-            if self.policy == policyPrevious: # Dunno if this is a good idea
+            elif self.policy == policyPrevious: # Dunno if this is a good idea
                 break
