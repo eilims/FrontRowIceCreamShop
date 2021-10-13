@@ -1,6 +1,7 @@
 # File contains the simulator class which runs discrete stochastic state space
 # By: Vishnu Devarakonda
 from simulator.environment import Environment
+import copy
 
 
 class Simulator:
@@ -14,10 +15,10 @@ class Simulator:
         self._env = env
         self._env.init_transition_probabilites()
         self._env.init_reward()
-        self._initial_state = initial_state
-        self._current_state = self._initial_state.copy()
+        self._initial_state = self._env._states_keys[initial_state]
+        self._current_state = copy.deepcopy(self._initial_state)
         self._current_observation = self.observe()
-        self._current_action = None
+        self._current_action = self._env._actions[0] # choose any action
         self._t_step = 0
 
     def render(self):
@@ -52,7 +53,7 @@ class Simulator:
         return self._env.get_observation(self._current_state)
 
 
-    def run(self, steps: int, render : bool = False):
+    def run(self, policy, steps: int, render : bool = False):
         """
         This function will run the simulator.
         args:
@@ -63,15 +64,7 @@ class Simulator:
         if render:
             self.render()
         while self._t_step < steps:
-            self._current_action = self._env.get_best_action(
-                self._current_state,
-                self._current_observation)
-            """(
-                current_state,
-                current_observation,
-                curret_action,
-                next_state,
-                t_step)"""
+            self._current_action = self._env.get_best_action(self._current_state, policy)
             self._current_state = self.step(self._current_action)
             self._current_observation = self.observe()
             if render:

@@ -8,6 +8,8 @@ class Environment:
     ex: class Gridworld(Environment) ....
     """
     def __init__(self) -> None:
+        self._policy = None
+        self._value = None
         pass
 
     def init_reward(self):
@@ -42,7 +44,7 @@ class Environment:
         """
         raise NotImplementedError
 
-    def get_best_action(self, state, observation):
+    def get_best_action(self, state):
         """
         Implement this function to get the best action given the state and
         observation.

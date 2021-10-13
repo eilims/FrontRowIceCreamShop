@@ -4,7 +4,7 @@ import random
 import numpy as np
 
 class MDP:
-    def __init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon):
+    def __init__(self, env, horizon, gamma, epsilon):
         """
         Initialize an MDP problem
         args:
@@ -16,10 +16,10 @@ class MDP:
             gamma: Discount factor on future rewards, float [0.0, 1.0]
             epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
         """
-        self._states = states
-        self._actions = actions
-        self._probabilities = probabilities
-        self._rewards = rewards
+        self._states = env._states
+        self._actions = env._actions
+        self._probabilities = env._transition_probabilities
+        self._rewards = env._rewards
         assert horizon == -1 or (type(horizon) is int and horizon >= 0)
         self._horizon = horizon
         self._gamma = gamma
@@ -56,7 +56,7 @@ class MDP:
 
 
 class ValueIteration(MDP):
-    def __init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon):
+    def __init__(self, env, horizon, gamma, epsilon):
         """
         Initialize a Value Iteration MDP problem solver, inherits from MDP class
         args:
@@ -68,7 +68,7 @@ class ValueIteration(MDP):
             gamma: Discount factor on future rewards, float [0.0, 1.0]
             epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
         """
-        MDP.__init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon)
+        MDP.__init__(self, env, horizon, gamma, epsilon)
 
 
         # Decide if we need to solve on an infinite or finite horizon
@@ -107,7 +107,7 @@ class ValueIteration(MDP):
 
 
 class PolicyIteration(MDP):
-    def __init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon):
+    def __init__(self, env, horizon, gamma, epsilon):
         """
         Initialize a Policy Iteration MDP problem solver, inherits from MDP class
         args:
@@ -119,7 +119,7 @@ class PolicyIteration(MDP):
             gamma: Discount factor on future rewards, float [0.0, 1.0]
             epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
         """
-        MDP.__init__(self, states, actions, probabilities, rewards, horizon, gamma, epsilon)
+        MDP.__init__(self, env, horizon, gamma, epsilon)
 
 
         # Decide if we need to solve on an infinite or finite horizon
