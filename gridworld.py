@@ -11,8 +11,8 @@ import random
 
 class GridWorld(env.Environment):
   def __init__(self):
-    self._x_max = 5
-    self._y_max = 5
+    self._x_max = 20
+    self._y_max = 20
     self._pe = .3
 
     # States
@@ -24,7 +24,7 @@ class GridWorld(env.Environment):
             self._states_map[self._state_count] = (i,j)
             self._states_keys[(i,j)] = self._state_count
             self._state_count+=1
-    self._states = np.array(list(self._states_map.keys()))
+    self._states = self._states_map.keys()
 
     # Actions
     self._actions = [[-1, 0],[1, 0],[0, -1],[0, 1],[0, 0]]
@@ -33,7 +33,13 @@ class GridWorld(env.Environment):
 
     self._goals = np.array([[4,4]])
 
-    self._obstacles = np.array([[1,1],[1,3],[2,1],[2,3]])
+    # Place obstacles into map. Value does not really matter
+    self._obstacles = {}
+    self._obstacles[(1,1)] = 1
+    self._obstacles[(1,3)] = 1
+    self._obstacles[(2,1)] = 1
+    self._obstacles[(2,3)] = 1
+    print(self._obstacles)
 
     self._transition_probabilities = {}
     self.init_transition_probabilites()
@@ -72,8 +78,10 @@ class GridWorld(env.Environment):
 
   def get_number_of_obstacles(self, state):
     obstacleCount = 0
-    for neighborState in self.get_actionable_states(state):
-        if(self.is_state_in_list(neighborState, self._obstacles)):
+    for action in self._actions_map.values():
+        neighborStateArr = state + action
+        neighborState = (neighborStateArr[0], neighborStateArr[1])
+        if(neighborState in self._obstacles):
             obstacleCount += 1
         elif(not self.in_grid(neighborState)):
             obstacleCount += 1
@@ -146,12 +154,12 @@ class GridWorld(env.Environment):
             # Append new array for each current state
             self._transition_probabilities[actionIndex].append([])
             for nextStateIndex in self._states:
-                nextState = np.array(self._states_map[nextStateIndex])
+                nextState = self._states_map[nextStateIndex]
                 # Start with assumption 0
                 probability = 0
 
                 # Verify the target state is not an obstacle
-                if(not self.is_state_in_list(nextState, self._obstacles)):
+                if(not nextState in self._obstacles.keys()):
                     # If the current action is to do nothing
                     if(actionIndex == 4):
                         obstacleCount = self.get_number_of_obstacles(currentState)
