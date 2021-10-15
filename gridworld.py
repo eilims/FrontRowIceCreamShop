@@ -8,6 +8,7 @@ from simulator import simulator
 import numpy as np
 from math import ceil, floor
 import random
+import matplotlib.pyplot as plt
 
 class GridWorld(env.Environment):
   def __init__(self):
@@ -34,6 +35,7 @@ class GridWorld(env.Environment):
     self._goals = np.array([[4,4]])
 
     self._obstacles = np.array([[1,1],[1,3],[2,1],[2,3]])
+    self._negativeRewards = np.array([])
 
     self._transition_probabilities = {}
     self.init_transition_probabilites()
@@ -121,6 +123,8 @@ class GridWorld(env.Environment):
           transitionProbability = probabilityDistribution[nextStateIndex]
           if( nextStateIsObstacle ):
             currentRewardMatrix[currentStateIndex, nextStateIndex] = 0
+          elif self.is_state_in_list(nextState, self._negativeRewards):
+            currentRewardMatrix[currentStateIndex, nextStateIndex] = self._penalty
           elif ( transitionProbability > 0 and nextStateIsGoal ):
             currentRewardMatrix[currentStateIndex, nextStateIndex] = self._goal_reward
           else:
@@ -237,3 +241,36 @@ class GridWorld(env.Environment):
       self._actions_map[action],
       self._states_map[nState[0]]))
     return nState[0]
+  def plot_policy(self):
+    policy_array = np.zeros((self._x_max, self._y_max)).flatten()
+    for i in range(self._x_max * self._y_max):
+        policy_array[i] = self._policy[i]
+    policy_array = policy_array.reshape((self._x_max, self._y_max))
+
+    fig, ax = plt.subplots()
+    ax.imshow(np.zeros((self._x_max, self._y_max)), cmap='binary')
+    ax.set_xticks(list(range(self._x_max)))
+    ax.set_yticks(list(range( self._y_max)))
+    p = np.chararray((self._x_max, self._y_max), unicode=True)
+    counter = 0
+    for i in range(self._y_max):
+        for j in range(self._x_max):
+            index = policy_array[i][j]
+
+            if self.is_state_in_list([i, j], self._obstacles):
+              p[i][j] = '\u019F' # Obstacle
+            elif(index==0):
+                p[i][j] ='\u2191' # UP
+            elif(index==1):
+                p[i][j] = '\u2193' # DOWN
+            elif(index==2):
+                p[i][j] = '\u2190' #LEFT
+            elif(index==3):
+                p[i][j] = '\u2192' #RIGHT
+            else: # Stay still
+                p[i][j] = 'x'
+
+            ax.text(j, i, p[i][j], ha='center', va='center')
+            counter+=1
+    # plt.gca().invert_yaxis()
+    plt.show()
