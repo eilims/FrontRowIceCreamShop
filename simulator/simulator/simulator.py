@@ -13,8 +13,6 @@ class Simulator:
             initial_state: numpy array.
         """
         self._env = env
-        self._env.init_transition_probabilites()
-        self._env.init_reward()
         self._initial_state = self._env._states_keys[initial_state]
         self._current_state = copy.deepcopy(self._initial_state)
         self._current_observation = self.observe()
