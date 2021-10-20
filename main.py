@@ -19,7 +19,7 @@ gw = GridWorld()
 solver = ValueIteration(gw, -1, 0.5, 0.000001)
 solver.run()
 print("State Values: ")
-print(np.reshape(solver.V, (5,5)))
+print(solver.V)
 print("Policy: ")
 print(solver.policy)
 
