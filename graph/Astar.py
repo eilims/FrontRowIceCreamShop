@@ -1,20 +1,21 @@
-#Implements DFS
-#By: Vishnu Devarakonda
+# Implements Astar
+# By: Vishnu Devarakonda
 from graph import Graph
 from search import Search
+from heapq import heappop, heappush
 
-class DFS(Search):
-    def __init__(self, graph: Graph) -> None:
+class Astar(Search):
+    def __init__(self, graph : Graph, heuristic) -> None:
         super().__init__(graph)
+        self._h = heuristic
 
-
-    def run(self, source : int,  target : int):
-        STK = [(source,(None, None))]
+    def run(self, source: int, target : int):
+        mH = [(0, source, (None, None))]
         seen = set([source])
         actions = []
         path = {source: (None, None)}
-        while STK:
-            node, par = STK.pop()
+        while mH:
+            _, node, par  = heappop(mH)
             if node == target:
                 parent, act = par
                 actions.insert(0, act)
@@ -27,6 +28,6 @@ class DFS(Search):
             for n, a in neighbors:
                 if n not in seen:
                     path[n] = (node, a)
-                    STK.append((n, (node, a)))
+                    heappush(mH, (self._h(n), n, (node, a)))
                     seen.add(n)
         return actions
