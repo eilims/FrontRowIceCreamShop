@@ -1,7 +1,6 @@
 # Defines the base class for search algorithm
 # By: Vishnu Devarakonda
-import Graph from Graph
-
+from graph import Graph
 
 class Search:
     def __init__(self, graph: Graph) -> None:

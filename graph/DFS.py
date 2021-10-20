@@ -1,3 +1,5 @@
+#Implements DFS
+#By: Vishnu Devarakonda
 import Graph from Graph
 
 class DFS(Search):
@@ -15,8 +17,8 @@ class DFS(Search):
                 actions = [p[1] for p in STK[1:]]
                 break
             if node not in seen:
-                neighbors = self._graph[node]
+                neighbors = self._graph.G[node]
                 for n, a in neighbors:
-                    STK.append(n)
+                    STK.append((n,a))
                 seen.add(node)
         return actions
