@@ -36,11 +36,12 @@ class GridWorld(env.Environment):
 
     # Place obstacles into map. Value does not really matter
     self._obstacles = {}
-    self._obstacles[(1,1)] = 1
-    self._obstacles[(1,3)] = 1
-    self._obstacles[(2,1)] = 1
-    self._obstacles[(2,3)] = 1
+    self._obstacles[self._states_keys[(1,1)]] = 1
+    self._obstacles[self._states_keys[(1,3)]] = 1
+    self._obstacles[self._states_keys[(2,1)]] = 1
+    self._obstacles[self._states_keys[(2,3)]] = 1
     print(self._obstacles)
+    self._negativeRewards = np.array([])
 
     self._transition_probabilities = {}
     self.init_transition_probabilites()
@@ -54,7 +55,8 @@ class GridWorld(env.Environment):
   def draw(self, state):
     state = self._states_map[state]
     grid = [[" " for i in range(self._x_max)] for j in range(self._y_max)]
-    for obs in self._obstacles:
+    for obsInd in self._obstacles:
+      obs = self._states_map[obsInd]
       grid[obs[0]][obs[1]] = "O"
     for goal in self._goals:
       grid[goal[0]][goal[1]] = "S"
@@ -82,10 +84,10 @@ class GridWorld(env.Environment):
     for action in self._actions_map.values():
         neighborStateArr = state + action
         neighborState = (neighborStateArr[0], neighborStateArr[1])
-        if(neighborState in self._obstacles):
+        if(not self.in_grid(neighborState)):
             obstacleCount += 1
-        elif(not self.in_grid(neighborState)):
-            obstacleCount += 1
+        elif(self._states_keys[neighborState] in self._obstacles):
+           obstacleCount += 1
     return obstacleCount
 
   def in_grid(self, state):
@@ -211,12 +213,12 @@ class GridWorld(env.Environment):
                  # Append the probability of transition from the current state to the next state
                 self._transition_probabilities[actionIndex][currentStateIndex].append(probability)
 
-    # print for debug
-    # for actionIndex, stateMatrix in self._transition_probabilities.items():
-    #    print(self._actions[actionIndex])
-    #    for currentStateIndex in range(len(stateMatrix)):
-    #        print("  " + str(self._states[currentStateIndex]))
-    #        print("    " + str(stateMatrix[currentStateIndex]))
+    #print for debug
+#    for actionIndex, stateMatrix in self._transition_probabilities.items():
+#       print(self._actions[actionIndex])
+#       for currentStateIndex in range(len(stateMatrix)):
+#           print("  " + str(self._states_map[currentStateIndex]))
+#           print("    " + str(stateMatrix[currentStateIndex]))
 
   def get_harmonic_mean(self, state):
     denInv = []
