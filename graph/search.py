@@ -7,5 +7,5 @@ class Search:
     def __init__(self, graph: Graph) -> None:
         self._graph = Graph
 
-    def run(self):
+    def run(self, source: int, target: int):
         raise NotImplementedError
