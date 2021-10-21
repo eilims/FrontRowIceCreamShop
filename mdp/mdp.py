@@ -31,6 +31,12 @@ class MDP:
         # Value initalization
         self.V = np.zeros(len(self._states)) # Zero initialize values
 
+    def phi_1(self, state):
+        """
+        Computes value given state for basis function 1, where phi(s) = dist between R1 and G1
+        """
+        return numpy.linalg.norm(state-)
+
 
     def bellmanBackup(self, update_value):
         """
