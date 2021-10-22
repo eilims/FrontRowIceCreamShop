@@ -1,4 +1,4 @@
-# Defines classes for 
+    # Defines classes for 
 # By: Patrick Han
 
 class Graph:

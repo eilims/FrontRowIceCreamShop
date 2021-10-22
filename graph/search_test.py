@@ -1,8 +1,12 @@
 from graph import Graph
 from DFS import DFS
+from BFS import BFS
 from Astar import Astar
 
 g = Graph()
+bfs = BFS(g)
+print(bfs.run(0,1))
+
 dfs = DFS(g)
 print(dfs.run(0, 1))
 
