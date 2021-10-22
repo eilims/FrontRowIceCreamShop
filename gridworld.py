@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 class GridWorld(env.Environment):
   def __init__(self):
-    self._x_max = 20
-    self._y_max = 20
+    self._x_max = 5
+    self._y_max = 5
     self._pe = .3
 
     # States

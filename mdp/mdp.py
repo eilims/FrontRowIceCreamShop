@@ -16,6 +16,7 @@ class MDP:
             gamma: Discount factor on future rewards, float [0.0, 1.0]
             epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
         """
+        self._env = env
         self._states = env._states
         self._actions = env._actions
         self._probabilities = env._transition_probabilities
@@ -53,6 +54,32 @@ class MDP:
                 self.V[i] = np.max(Q) # Maximize over all actions to get new V
             self.policy[i] = self._actions[np.argmax(Q)] # Argmax over all actions to update the policy
             
+class BasisFunctions(MDP):
+    def __init__(self, env, horizon, gamma, epsilon):
+        MDP.__init__(self, env, horizon, gamma, epsilon)
+        
+        self.phi = [self.phi1, self.phi2, self.phi3, self.phi4]
+    
+    def dist(s1, s2):
+        return np.sqrt(sum([(s1[i]-s2[i])**2 for i in range(len(s1))]))
+    
+    def phi1(s):
+        return min([self.dist(s[0], goal) for goal in self._env._goals])
+    
+    def phi2(s):
+        return min([self.dist(s[1], goal) for goal in self._env._goals])
+    
+    def phi3(s):
+        return self.dist(s[0], s[1])
+    
+    def phi4(s):
+        for state in s:
+            if self._env._states_keys[state] in self._env._obstacles:
+                return -1000
+        return 0
+    
+    def approxValue(Theta, s):
+        return sum([Theta[i]*phiI(s) for i, phiI in enumerate(self.phi)])
 
 
 class ValueIteration(MDP):
@@ -70,7 +97,6 @@ class ValueIteration(MDP):
         """
         MDP.__init__(self, env, horizon, gamma, epsilon)
 
-
         # Decide if we need to solve on an infinite or finite horizon
         self.use_infinite_horizon = False
         if self._horizon == -1:
@@ -82,6 +108,7 @@ class ValueIteration(MDP):
             # We can check to make sure that every state has an action later (i.e. not False), this is a really hacky way to do it for now
             self.policy[state] = False
 
+    
     def run(self):
         """
         Runs the Value Iteration algorithm
@@ -104,6 +131,60 @@ class ValueIteration(MDP):
             elif self.iteration == self._horizon:
                 break
 
+
+class ValueIterationApprox(BasisFunctions):
+    def __init__(self, env, horizon, gamma, epsilon):
+        """
+        Initialize a Value Iteration MDP problem solver, inherits from MDP class
+        args:
+            states: All possible states
+            actions: Possible actions that can be taken
+            probabilities: Transition probabilities between states under some action
+            rewards: Immediate rewards received for state transitions under some action
+            horizon: Horizon, -1 for infinite or a positive integer for finite horizon
+            gamma: Discount factor on future rewards, float [0.0, 1.0]
+            epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
+        """
+        BasisFunctions.__init__(self, env, horizon, gamma, epsilon)
+
+        self.Theta = np.zeros(len(self.phi))
+        
+        # Decide if we need to solve on an infinite or finite horizon
+        self.use_infinite_horizon = False
+        if self._horizon == -1:
+            self.use_infinite_horizon = True
+        self.iteration = 0 # If horizon is finite, we need to check 
+
+        # Initialize a deterministic policy which is a mapping between states and actions
+        for state in self._states:
+            # We can check to make sure that every state has an action later (i.e. not False), this is a really hacky way to do it for now
+            self.policy[state] = False
+
+    
+    def run(self):
+        """
+        Runs the Value Iteration algorithm
+        """
+        if self._horizon == 0:
+            return
+
+        while(True):
+            print(self.iteration)
+            self.iteration += 1
+            
+            Thetaprevious = self.Theta.copy()
+            # Vprevious = self.V.copy()
+            
+            
+            # Apply bellman operator to update V and the policy
+            # self.bellmanBackup(update_value = True)
+
+            # Stopping criteria
+            if self.use_infinite_horizon:
+                if np.max(np.abs(Vprevious - self.V)) <= self._epsilon: # If the max absolute difference is less than epsilon
+                    break
+            elif self.iteration == self._horizon:
+                break
 
 
 class PolicyIteration(MDP):
