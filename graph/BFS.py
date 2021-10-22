@@ -1,4 +1,4 @@
-#Implements DFS
+#Implements BFS
 #By: Zion Gutierrez
 from graph import Graph
 from search import Search
