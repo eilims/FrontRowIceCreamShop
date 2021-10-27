@@ -36,7 +36,7 @@ class MDP:
         """
         Computes value given state for basis function 1, where phi(s) = dist between R1 and G1
         """
-        return numpy.linalg.norm(state-)
+        return numpy.linalg.norm(state)
 
 
     def bellmanBackup(self, update_value):
@@ -66,25 +66,33 @@ class BasisFunctions(MDP):
 
         self.phi = [self.phi1, self.phi2, self.phi3, self.phi4]
 
-    def dist(s1, s2):
+    def dist(self, s1, s2):
         return np.sqrt(sum([(s1[i]-s2[i])**2 for i in range(len(s1))]))
 
-    def phi1(s):
-        return min([self.dist(s[0], goal) for goal in self._env._goals])
+    def phi1(self, s):
+        state = self._env._states_map[s]
+        return min([self.dist(state, goal) for goal in self._env._goals])
 
-    def phi2(s):
-        return min([self.dist(s[1], goal) for goal in self._env._goals])
+    def phi2(self, s):
+        state = self._env._states_map[s]
+        return min([self.dist(state, goal) for goal in self._env._goals])
 
-    def phi3(s):
-        return self.dist(s[0], s[1])
+    def phi3(self, s):
+        state = self._env._states_map[s]
+        return self.dist(state, state)
 
-    def phi4(s):
-        for state in s:
-            if self._env._states_keys[state] in self._env._obstacles:
-                return -1000
+    def phi4(self, s):
+        if s in self._env._obstacles:
+            return -1000
         return 0
 
-    def approxValue(Theta, s):
+    def getBasisValues(self, s):
+        basisValues = np.zeros(len(self.phi))
+        for i, phiI in enumerate(self.phi):
+            basisValues[i] = phiI(s)
+        return basisValues
+
+    def approxValue(self, Theta, s):
         return sum([Theta[i]*phiI(s) for i, phiI in enumerate(self.phi)])
 
 
@@ -153,7 +161,7 @@ class ValueIterationApprox(BasisFunctions):
         """
         BasisFunctions.__init__(self, env, horizon, gamma, epsilon)
 
-        self.Theta = np.zeros(len(self.phi))
+        self.Theta = np.random.rand(len(self.phi))
 
         # Decide if we need to solve on an infinite or finite horizon
         self.use_infinite_horizon = False
@@ -165,7 +173,16 @@ class ValueIterationApprox(BasisFunctions):
         for state in self._states:
             # We can check to make sure that every state has an action later (i.e. not False), this is a really hacky way to do it for now
             self.policy[state] = False
-
+            
+    def linearRegression(self, basisValues, vValue):
+        thetaValues = []
+        basisSummation = 0
+        for basisValue in basisValues:
+            basisSummation += basisValue ** 2
+            thetaValues.append(basisValue * vValue)
+        for i in range(len(thetaValues)):
+            thetaValues[i] /= basisSummation
+        return thetaValues
 
     def run(self):
         """
@@ -178,7 +195,6 @@ class ValueIterationApprox(BasisFunctions):
             print(self.iteration)
             self.iteration += 1
 
-            Thetaprevious = self.Theta.copy()
             Vprevious = self.V.copy()
 
             for i, currentState in enumerate(self._states):
@@ -189,10 +205,14 @@ class ValueIterationApprox(BasisFunctions):
                     maxValueList = []
                     running_sum = 0
                     for j, nextState in enumerate(self._states):
-                        running_sum += P[a][i][j] * (R[a][i][j] + self._gamma * self.V[j])
+                        running_sum += self._probabilities[a][i][j] * (self._rewards[a][i][j] + (self._gamma * vHat))
                     maxValueList.append(running_sum)
                 vBar = max(maxValueList)
-
+                print(self.Theta)
+                self.Theta = self.linearRegression(self.getBasisValues(currentState), vBar)
+                print(vBar)
+                print(self.Theta)
+                
 
             # Stopping criteria
             if self.use_infinite_horizon:
