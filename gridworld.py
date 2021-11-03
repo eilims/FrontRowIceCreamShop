@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 class GridWorld(env.Environment):
   def __init__(self):
-    self._x_max = 20
-    self._y_max = 20
+    self._x_max = 5
+    self._y_max = 5
     self._pe = .3
 
     # States
@@ -45,6 +45,9 @@ class GridWorld(env.Environment):
 
     self._transition_probabilities = {}
     self.init_transition_probabilites()
+
+    self._proability_obs_given_state = {}
+    self.init_observation_distribution()
 
     self._rewards = {}
     self._goal_reward = 1
@@ -148,6 +151,24 @@ class GridWorld(env.Environment):
     #        print("  " + str(self._states[currentStateIndex]))
     #        print("    " + str(stateMatrix[currentStateIndex]))
 
+  def init_observation_distribution(self):
+    """
+    Function initializes the observation distribution
+    """
+    self._proability_obs_given_state = {
+      state: self.get_observation(state) for state in self._states_map
+      }
+
+  def sample_prob_obs(self, state):
+    """
+    Functions samples P(Observation | state)
+
+    args:
+      state: int. The state at which to sample the distribution
+    """
+    dist = self._proability_obs_given_state[state]
+    return random.choices(dist["choices"], dist["weights"])
+
   def init_transition_probabilites(self):
     for actionIndex in self._actions:
         currentAction = np.array(self._actions_map[actionIndex])
@@ -230,7 +251,10 @@ class GridWorld(env.Environment):
     else:
       h = 2. / sum([1./d for d in denInv])
     prob = ceil(h) - h
-    return ceil(h) if random.random() > (1-prob) else floor(h)
+    return {
+      "weights": [prob, 1-prob],
+      "choices": [floor(h), ceil(h)]
+    }
 
   def get_observation(self, state):
     return self.get_harmonic_mean(self._states_map[state])
@@ -250,6 +274,7 @@ class GridWorld(env.Environment):
       self._actions_map[action],
       self._states_map[nState[0]]))
     return nState[0]
+
   def plot_policy(self):
     policy_array = np.zeros((self._x_max, self._y_max)).flatten()
     for i in range(self._x_max * self._y_max):
