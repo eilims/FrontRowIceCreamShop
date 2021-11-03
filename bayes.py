@@ -26,11 +26,10 @@ def get_next_belief(P_t, P_o, bPls):
 
 def state_estimation(env, b0, numIters):
   P_t  = env.init_transition_probabilites()
-  P_o  = env.init_observation_probabilites()
+  P_o  = env.init_observation_distribution()
   bMin = belmin(P_t, b0)
   bPls = belpls(P_o, bMin)
   for i in range(numIters - 1):
     bMin = belmin(P_t, bPls)
     bPls = belpls(P_o, bMin)
   return bPls
-

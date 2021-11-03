@@ -27,8 +27,8 @@ sim = simulator.Simulator(gw, initial_state)
 # sim.run(solver.policy, steps=20, render=True)
 
 belief0 = [0 for s in range(len(gw._states_map))]
-initStateNum = [key for key, state in gw._states_map.items() if state == initial_state][0]
-belief0[initStateNum] = 1.0
+belief0[gw._states_keys[initial_state]] = 1.0
+print(gw.init_transition_probabilites())
 print(state_estimation(gw, belief0, 5))
 
 # gw.plot_policy()
