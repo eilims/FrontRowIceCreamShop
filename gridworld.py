@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 
 class GridWorld(env.Environment):
   def __init__(self):
-    self._x_max = 20
-    self._y_max = 20
+    self._x_max = 5
+    self._y_max = 5
     self._pe = .3
 
     # States
@@ -40,7 +40,6 @@ class GridWorld(env.Environment):
     self._obstacles[self._states_keys[(1,3)]] = 1
     self._obstacles[self._states_keys[(2,1)]] = 1
     self._obstacles[self._states_keys[(2,3)]] = 1
-    print(self._obstacles)
     self._negativeRewards = np.array([])
 
     self._transition_probabilities = {}
