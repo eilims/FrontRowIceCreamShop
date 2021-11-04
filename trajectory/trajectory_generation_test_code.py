@@ -10,14 +10,20 @@ from gridworld import GridWorld
 from trajectory import Trajectory
 
 initial_state = (0,0)
+
+# Trajectory 1: L shape down and right
 gw = GridWorld()
-
 sim = simulator.Simulator(gw, initial_state)
-
-my_trajectory = Trajectory([1,1,1,1,1,1,1], sim)
+my_trajectory = Trajectory([1,1,1,1,3,3,3,3], sim)
 my_trajectory.construct()
+sim.render()
 
-print("History of states {}: {}".format(len(my_trajectory._state_history), my_trajectory._state_history))
-print("History of actions {}: {}".format(len(my_trajectory._action_history), my_trajectory._action_history))
+# Trajectory 2: L shape right and down
+gw2 = GridWorld()
+sim2 = simulator.Simulator(gw2, initial_state)
+my_trajectory2 = Trajectory([3,3,3,3,1,1,1,1], sim2)
+my_trajectory2.construct()
+sim2.render()
+
 
 exit()
