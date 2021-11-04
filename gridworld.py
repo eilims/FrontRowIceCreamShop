@@ -164,7 +164,7 @@ class GridWorld(env.Environment):
                 probability = 0
 
                 # Verify the target state is not an obstacle
-                if(not nextState in self._obstacles.keys()):
+                if(not nextStateIndex in self._obstacles.keys()):
                     # If the current action is to do nothing
                     if(actionIndex == 4):
                         obstacleCount = self.get_number_of_obstacles(currentState)
