@@ -17,7 +17,7 @@ initial_state = (0,0)
 gw = GridWorld()
 
 # Run value iteration
-solver = ValueIterationApprox(gw, 5, 0.5, 0.000001)
+solver = ValueIteration(gw, 5, 0.5, 0.000001)
 solver.run()
 print("State Values: ")
 print(solver.V)
