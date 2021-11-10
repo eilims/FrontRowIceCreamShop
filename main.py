@@ -9,6 +9,7 @@ sys.path.append(path)
 from simulator import simulator
 from gridworld import GridWorld
 from mdp import ValueIteration
+from mdp import ValueIterationApprox
 from mdp import PolicyIteration
 from trajectory import Trajectory
 from bayes import state_estimation
