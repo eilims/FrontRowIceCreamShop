@@ -16,6 +16,7 @@ class MDP:
             gamma: Discount factor on future rewards, float [0.0, 1.0]
             epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
         """
+        self._env = env
         self._states = env._states
         self._actions = env._actions
         self._probabilities = env._transition_probabilities
@@ -30,6 +31,12 @@ class MDP:
 
         # Value initalization
         self.V = np.zeros(len(self._states)) # Zero initialize values
+
+    def phi_1(self, state):
+        """
+        Computes value given state for basis function 1, where phi(s) = dist between R1 and G1
+        """
+        return numpy.linalg.norm(state)
 
 
     def bellmanBackup(self, update_value):
@@ -48,11 +55,45 @@ class MDP:
                 for j, s_prime in enumerate(self._states):
                     running_sum += P[a][i][j] * (R[a][i][j] + self._gamma * self.V[j])
                 Q[k] = running_sum
-            
+
             if update_value: # Value should only be updated during Value Iteration
                 self.V[i] = np.max(Q) # Maximize over all actions to get new V
             self.policy[i] = self._actions[np.argmax(Q)] # Argmax over all actions to update the policy
-            
+
+class BasisFunctions(MDP):
+    def __init__(self, env, horizon, gamma, epsilon):
+        MDP.__init__(self, env, horizon, gamma, epsilon)
+
+        self.phi = [self.phi1, self.phi2, self.phi3, self.phi4]
+
+    def dist(self, s1, s2):
+        return np.sqrt(sum([(s1[i]-s2[i])**2 for i in range(len(s1))]))
+
+    def phi1(self, s):
+        state = self._env._states_map[s]
+        return min([self.dist(state, goal) for goal in self._env._goals])
+
+    def phi2(self, s):
+        state = self._env._states_map[s]
+        return min([self.dist(state, goal) for goal in self._env._goals])
+
+    def phi3(self, s):
+        state = self._env._states_map[s]
+        return self.dist(state, state)
+
+    def phi4(self, s):
+        if s in self._env._obstacles:
+            return -1000
+        return 0
+
+    def getBasisValues(self, s):
+        basisValues = np.zeros(len(self.phi))
+        for i, phiI in enumerate(self.phi):
+            basisValues[i] = phiI(s)
+        return basisValues
+
+    def approxValue(self, Theta, s):
+        return sum([Theta[i]*phiI(s) for i, phiI in enumerate(self.phi)])
 
 
 class ValueIteration(MDP):
@@ -70,17 +111,17 @@ class ValueIteration(MDP):
         """
         MDP.__init__(self, env, horizon, gamma, epsilon)
 
-
         # Decide if we need to solve on an infinite or finite horizon
         self.use_infinite_horizon = False
         if self._horizon == -1:
             self.use_infinite_horizon = True
-        self.iteration = 0 # If horizon is finite, we need to check 
+        self.iteration = 0 # If horizon is finite, we need to check
 
         # Initialize a deterministic policy which is a mapping between states and actions
         for state in self._states:
             # We can check to make sure that every state has an action later (i.e. not False), this is a really hacky way to do it for now
             self.policy[state] = False
+
 
     def run(self):
         """
@@ -105,6 +146,81 @@ class ValueIteration(MDP):
                 break
 
 
+class ValueIterationApprox(BasisFunctions):
+    def __init__(self, env, horizon, gamma, epsilon):
+        """
+        Initialize a Value Iteration MDP problem solver, inherits from MDP class
+        args:
+            states: All possible states
+            actions: Possible actions that can be taken
+            probabilities: Transition probabilities between states under some action
+            rewards: Immediate rewards received for state transitions under some action
+            horizon: Horizon, -1 for infinite or a positive integer for finite horizon
+            gamma: Discount factor on future rewards, float [0.0, 1.0]
+            epsilon: Stopping criteria, maximum change in value function for each iteration before stopping
+        """
+        BasisFunctions.__init__(self, env, horizon, gamma, epsilon)
+
+        self.Theta = np.random.rand(len(self.phi))
+
+        # Decide if we need to solve on an infinite or finite horizon
+        self.use_infinite_horizon = False
+        if self._horizon == -1:
+            self.use_infinite_horizon = True
+        self.iteration = 0 # If horizon is finite, we need to check
+
+        # Initialize a deterministic policy which is a mapping between states and actions
+        for state in self._states:
+            # We can check to make sure that every state has an action later (i.e. not False), this is a really hacky way to do it for now
+            self.policy[state] = False
+            
+    def linearRegression(self, basisValues, vValue):
+        thetaValues = []
+        basisSummation = 0
+        for basisValue in basisValues:
+            basisSummation += basisValue ** 2
+            thetaValues.append(basisValue * vValue)
+        for i in range(len(thetaValues)):
+            thetaValues[i] /= basisSummation
+        return thetaValues
+
+    def run(self):
+        """
+        Runs the Value Iteration algorithm
+        """
+        if self._horizon == 0:
+            return
+
+        while(True):
+            print(self.iteration)
+            self.iteration += 1
+
+            Vprevious = self.V.copy()
+
+            for i, currentState in enumerate(self._states):
+                # Get the approximated values using theta and the current state
+                vHat = self.approxValue(self.Theta, currentState)
+                # Calculate the vBar values
+                for a, action in enumerate(self._actions):
+                    maxValueList = []
+                    running_sum = 0
+                    for j, nextState in enumerate(self._states):
+                        running_sum += self._probabilities[a][i][j] * (self._rewards[a][i][j] + (self._gamma * vHat))
+                    maxValueList.append(running_sum)
+                vBar = max(maxValueList)
+                print(self.Theta)
+                self.Theta = self.linearRegression(self.getBasisValues(currentState), vBar)
+                print(vBar)
+                print(self.Theta)
+                
+
+            # Stopping criteria
+            if self.use_infinite_horizon:
+                if np.max(np.abs(Vprevious - self.V)) <= self._epsilon: # If the max absolute difference is less than epsilon
+                    break
+            elif self.iteration == self._horizon:
+                break
+
 
 class PolicyIteration(MDP):
     def __init__(self, env, horizon, gamma, epsilon):
@@ -126,7 +242,7 @@ class PolicyIteration(MDP):
         self.use_infinite_horizon = False
         if self._horizon == -1:
             self.use_infinite_horizon = True
-        self.iteration = 0 # If horizon is finite, we need to check 
+        self.iteration = 0 # If horizon is finite, we need to check
 
         # Initialize a randomized deterministic policy which is a mapping between states and actions
         for state in self._states:
@@ -153,7 +269,7 @@ class PolicyIteration(MDP):
             for m, s in enumerate(self._states): # Build P_bar, i.e. transition probabilities under the current policy
                 for n, s_prime in enumerate(self._states):
                     P_bar[m][n] = self._probabilities[self.policy[s]][m][n] # The probability of going from s to s_prime under the current policy
-            
+
             R_bar = np.zeros((num_states, num_states))
             for m, s in enumerate(self._states): # Build R_bar, i.e. rewards under the current policy
                 for n, s_prime in enumerate(self._states):
