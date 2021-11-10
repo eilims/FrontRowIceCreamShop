@@ -3,11 +3,14 @@ path = "{}/simulator".format(os.getcwd())
 sys.path.append(path)
 path = "{}/mdp".format(os.getcwd())
 sys.path.append(path)
+path = "{}/trajectory".format(os.getcwd())
+sys.path.append(path)
 
 from simulator import simulator
 from gridworld import GridWorld
 from mdp import ValueIteration
 from mdp import PolicyIteration
+from trajectory import Trajectory
 from bayes import state_estimation
 import numpy as np
 
@@ -25,11 +28,13 @@ gw = GridWorld()
 
 sim = simulator.Simulator(gw, initial_state)
 # sim.run(solver.policy, steps=20, render=True)
+my_trajectory = Trajectory([3,3,3,3,1,1,1,1], sim)
+my_trajectory.construct()
 
 belief0 = [0 for s in range(len(gw._states_map))]
 belief0[gw._states_keys[initial_state]] = 1.0
-print(gw.init_transition_probabilites())
-print(state_estimation(gw, belief0, 5))
+belief_history = state_estimation(gw, my_trajectory, belief0)
+print("State Estimates ({}): {}".format(len(belief_history), [np.argmax(belief) for belief in belief_history]))
 
 # gw.plot_policy()
 exit()

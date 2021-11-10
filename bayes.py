@@ -6,9 +6,13 @@ def belpls(P_o, bMin, observation):
   bPls = [0.0 for s in range(numStates)]
   sumB =  0.0
   for state in range(numStates):
-    bPls[state] = P_o[state][observation]*bMin[state]
-    sumB += bPls[state]
+    for obs in range(len(P_o[state]["choices"])):
+      if P_o[state]["choices"][obs] == observation:
+        bPls[state] = P_o[state]["weights"][obs]*bMin[state]
+        break
+  sumB = sum(bPls)
   bPls = [bVal/sumB for bVal in bPls]
+  # print(bPls)
   return bPls
 
 def belmin(P_t, bPls, action):
@@ -19,17 +23,18 @@ def belmin(P_t, bPls, action):
       bMin[new_state] += P_t[action][state][new_state]*bPls[state]
   return bMin
 
-def get_next_belief(P_t, P_o, bPls, observation):
-  bMin = belmin(P_t, bPls)
+def get_next_belief(P_t, P_o, bPls, action, observation):
+  bMin = belmin(P_t, bPls, action)
   bPls = belpls(P_o, bMin, observation)
   return bPls
 
-def state_estimation(env, b0, numIters):
-  P_t  = env.init_transition_probabilites()
+def state_estimation(env, trajectory, b0):
+  action_history, observation_history = trajectory._action_history, trajectory._observation_history
+  P_t  = env._transition_probabilities
   P_o  = env._proability_obs_given_state
-  bMin = belmin(P_t, b0, action)
-  bPls = belpls(P_o, bMin, observation)
-  for i in range(numIters - 1):
-    bMin = belmin(P_t, bPls, action)
-    bPls = belpls(P_o, bMin, observation)
-  return bPls
+  bPls = get_next_belief(P_t, P_o, b0, action_history[0], observation_history[0])
+  belief_history = [bPls]
+  for step in range(1, len(action_history)):
+    bPls = get_next_belief(P_t, P_o, bPls, action_history[step], observation_history[step])
+    belief_history.append(bPls)
+  return belief_history

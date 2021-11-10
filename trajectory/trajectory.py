@@ -25,7 +25,7 @@ class Trajectory:
         for action in self._action_history:
             next_state = self._simulator.step(action)
             self._state_history.append(next_state) # History of states
-            # self._observation_history(self._simulator._env.sample_prob_obs_(next_state)) # History of observations
+            self._observation_history.append(self._simulator._env.sample_prob_obs(next_state)) # History of observations
             self._simulator._current_state = next_state
 
         print("History of states ({}): {}".format(len(self._state_history), self._state_history))

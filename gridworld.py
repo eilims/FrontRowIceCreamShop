@@ -14,7 +14,7 @@ class GridWorld(env.Environment):
   def __init__(self):
     self._x_max = 5
     self._y_max = 5
-    self._pe = .3
+    self._pe = 0.1
 
     # States
     self._states_map = {}
@@ -166,7 +166,7 @@ class GridWorld(env.Environment):
       state: int. The state at which to sample the distribution
     """
     dist = self._proability_obs_given_state[state]
-    return random.choices(dist["choices"], dist["weights"])
+    return random.choices(dist["choices"], dist["weights"])[0]
 
   def init_transition_probabilites(self):
     for actionIndex in self._actions:
@@ -250,6 +250,11 @@ class GridWorld(env.Environment):
     else:
       h = 2. / sum([1./d for d in denInv])
     prob = ceil(h) - h
+    if floor(h) == ceil(h):
+      return {
+        "weights": [1],
+        "choices": [h]
+      }
     return {
       "weights": [prob, 1-prob],
       "choices": [floor(h), ceil(h)]
@@ -263,15 +268,9 @@ class GridWorld(env.Environment):
 
   def get_next_state(self, state, action):
     states = self._transition_probabilities[action][state]
-    print("Transition Prob at state {}, given action {}: ".format(
-      self._states_map[state],
-      self._actions_map[action]), states)
-    nState = random.choices(
-      [i for i in range(self._state_count)], weights=states)
-    print("Current State: {}, Action: {}, Next State: {}".format(
-      self._states_map[state],
-      self._actions_map[action],
-      self._states_map[nState[0]]))
+    # print("Transition Prob at state {}, given action {}: ".format(self._states_map[state], self._actions_map[action]), states)
+    nState = random.choices([i for i in range(self._state_count)], weights=states)
+    # print("Current State: {}, Action: {}, Next State: {}".format(self._states_map[state], self._actions_map[action], self._states_map[nState[0]]))
     return nState[0]
 
   def plot_policy(self):
