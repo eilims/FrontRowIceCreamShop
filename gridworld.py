@@ -14,7 +14,7 @@ class GridWorld(env.Environment):
   def __init__(self):
     self._x_max = 5
     self._y_max = 5
-    self._pe = .3
+    self._pe = 0.1
 
     # States
     self._states_map = {}
@@ -28,8 +28,8 @@ class GridWorld(env.Environment):
     self._states = self._states_map.keys()
 
     # Actions
-    self._actions = [[-1, 0],[1, 0],[0, -1],[0, 1],[0, 0]]
-    self._actions_map = {i:a for i,a in enumerate(self._actions)}
+    self._actions_list = [[-1, 0],[1, 0],[0, -1],[0, 1],[0, 0]]
+    self._actions_map = {i:a for i,a in enumerate(self._actions_list)}
     self._actions = np.array(list(self._actions_map.keys()))
 
     self._goals = np.array([[4,4]])
@@ -162,12 +162,11 @@ class GridWorld(env.Environment):
   def sample_prob_obs(self, state):
     """
     Functions samples P(Observation | state)
-
     args:
       state: int. The state at which to sample the distribution
     """
     dist = self._proability_obs_given_state[state]
-    return random.choices(dist["choices"], dist["weights"])
+    return random.choices(dist["choices"], dist["weights"])[0]
 
   def init_transition_probabilites(self):
     for actionIndex in self._actions:
@@ -185,7 +184,7 @@ class GridWorld(env.Environment):
                 probability = 0
 
                 # Verify the target state is not an obstacle
-                if(not nextState in self._obstacles.keys()):
+                if(not nextStateIndex in self._obstacles.keys()):
                     # If the current action is to do nothing
                     if(actionIndex == 4):
                         obstacleCount = self.get_number_of_obstacles(currentState)
@@ -217,11 +216,16 @@ class GridWorld(env.Environment):
                             if(np.all(np.equal(nextState, currentState))):
                                 desiredNextState = currentState + currentAction
                                 # If the current state and action take us into a invalid state
-                                if(self.is_state_in_list(desiredNextState, self._obstacles) or not self.in_grid(desiredNextState)):
+                                if(not self.in_grid(desiredNextState)):
                                     probability = 1 - (4 - obstacleCount)*(self._pe/4)
                                 # If the current state and action take us into a valid state
                                 else:
-                                    probability = (1 + obstacleCount)*(self._pe/4)
+                                    desiredNextStateList = (desiredNextState[0], desiredNextState[1])
+                                    desiredNextStateIndex = self._states_keys[desiredNextStateList]
+                                    if(desiredNextStateIndex in self._obstacles):
+                                        probability = 1 - (4 - obstacleCount)*(self._pe/4)
+                                    else:
+                                        probability = (1 + obstacleCount)*(self._pe/4)
                             else:
                                 # Is the next state somewhere the actions allow us to move
                                 if(self.is_state_in_list(nextState, self.get_actionable_states(currentState))):
@@ -235,11 +239,11 @@ class GridWorld(env.Environment):
                 self._transition_probabilities[actionIndex][currentStateIndex].append(probability)
 
     #print for debug
-#    for actionIndex, stateMatrix in self._transition_probabilities.items():
-#       print(self._actions[actionIndex])
-#       for currentStateIndex in range(len(stateMatrix)):
-#           print("  " + str(self._states_map[currentStateIndex]))
-#           print("    " + str(stateMatrix[currentStateIndex]))
+    #for actionIndex, stateMatrix in self._transition_probabilities.items():
+    #   print(self._actions_list[actionIndex])
+    #   for currentStateIndex in range(len(stateMatrix)):
+    #       print("  " + str(self._states_map[currentStateIndex]))
+    #       print("    " + str(stateMatrix[currentStateIndex]))
 
   def get_harmonic_mean(self, state):
     denInv = []
@@ -251,6 +255,11 @@ class GridWorld(env.Environment):
     else:
       h = 2. / sum([1./d for d in denInv])
     prob = ceil(h) - h
+    if floor(h) == ceil(h):
+      return {
+        "weights": [1],
+        "choices": [h]
+      }
     return {
       "weights": [prob, 1-prob],
       "choices": [floor(h), ceil(h)]
@@ -264,15 +273,9 @@ class GridWorld(env.Environment):
 
   def get_next_state(self, state, action):
     states = self._transition_probabilities[action][state]
-    print("Transition Prob at state {}, given action {}: ".format(
-      self._states_map[state],
-      self._actions_map[action]), states)
-    nState = random.choices(
-      [i for i in range(self._state_count)], weights=states)
-    print("Current State: {}, Action: {}, Next State: {}".format(
-      self._states_map[state],
-      self._actions_map[action],
-      self._states_map[nState[0]]))
+    # print("Transition Prob at state {}, given action {}: ".format(self._states_map[state], self._actions_map[action]), states)
+    nState = random.choices([i for i in range(self._state_count)], weights=states)
+    # print("Current State: {}, Action: {}, Next State: {}".format(self._states_map[state], self._actions_map[action], self._states_map[nState[0]]))
     return nState[0]
 
   def plot_policy(self):
